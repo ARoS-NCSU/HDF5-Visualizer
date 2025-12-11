@@ -106,10 +106,13 @@ def plotData(fig,t,data,downsample=1):
         downsample (int): Optional; an integer specifying the downsampling factor for the data.
     '''
 
-    t = t[::downsample] / pd.Timedelta(hours=1).total_seconds()  # Convert time to hours
+    t = pd.to_timedelta(t[::downsample], unit="s") # Converting from seconds to hours
+    origin = pd.Timestamp("1970-01-01") # Add artificial date
+    t_dt = origin + t # New datetime timestamp for better visualization
+
     for column in data.columns:
         val = data[column][::downsample]
-        fig.add_trace(go.Scatter(x=t, y=val, mode='lines', name=column))
+        fig.add_trace(go.Scatter(x=t_dt, y=val, mode='lines', name=column))
 
     fig.update_layout(
         title = "Data Over Time",
@@ -118,7 +121,7 @@ def plotData(fig,t,data,downsample=1):
         xaxis = dict(
             showgrid = True,
             tickangle = 0,
-            #tickformat="%b %d %Y<br>%H:%M:%S",
+            tickformat="%H:%M:%S.%f",
             nticks = 10,
             rangeselector = dict(
                 buttons = list([
